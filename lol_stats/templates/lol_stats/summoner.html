@@ -1,0 +1,51 @@
+{% extends "lol_stats/base.html" %}
+
+{% load static %}
+
+{% block title %}LoLGG{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-image: url("{% static 'lol_stats/images/backLoL.jpg' %}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        overflow: hidden; /* Évite le scroll */
+        height: 100vh;
+    }
+    .form-container {
+        background: rgba(255, 255, 255, 0.8);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-top: -100px; /* Remonte le formulaire de 100 pixels */
+    }
+</style>
+<div class="flex items-center justify-center min-h-screen">
+    <div class="max-w-lg w-full form-container">
+        <form method="post" class="mb-4">
+            {% csrf_token %}
+            <div class="flex items-center border-b border-gray-300 py-2">
+                <label for="summoner_name" class="hidden">Search Summoner</label>
+                <input id="summoner_name" type="text" name="summoner_name" placeholder="Enter Summoner Name" class="flex-1 appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none">
+                <button type="submit" class="flex-shrink-0 bg-blue-500 text-white py-2 px-4 rounded-md">Search</button>
+            </div>
+        </form>
+
+        {% if data %}
+            {% if data.error %}
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline">{{ data.error }}</span>
+                </div>
+            {% else %}
+                <div class="mt-4">
+                    <h2 class="text-2xl font-bold mb-2">{{ data.summoner.gameName }}</h2>
+                    <p class="text-gray-700">Tag Line: {{ data.summoner.tagLine }}</p>
+                    <p class="text-gray-700">PUUID: {{ data.summoner.puuid }}</p>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
