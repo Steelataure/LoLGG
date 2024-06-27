@@ -1,16 +1,22 @@
-import requests
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .forms import SummonerForm
+import requests
 import urllib.parse
 
 def summoner_view(request):
-    data = None
     if request.method == 'POST':
         form = SummonerForm(request.POST)
         if form.is_valid():
             summoner_name = form.cleaned_data['summoner_name']
-            tagline = 'euw'  # Correct tagline code
-            api_key = 'RGAPI-6838818e-b2e3-45be-bfc3-5b58bc083b14'  # Your API key
+            
+            # Check if summoner_name contains a '#'
+            if '#' in summoner_name:
+                summoner_name, tagline = summoner_name.split('#', 1)
+                tagline = tagline.strip().lower()  # Ensure tagline is lowercase and trimmed
+            else:
+                tagline = 'euw'  # Default tagline
+            
+            api_key = 'RGAPI-4188386b-e8f0-41ba-b5fb-07c8aeb0aa7b'  # Your API key
 
             # URL encode the summoner name
             encoded_summoner_name = urllib.parse.quote(summoner_name)
@@ -24,23 +30,28 @@ def summoner_view(request):
                 response = requests.get(url, headers=headers)
                 response.raise_for_status()  # Raise an HTTPError for bad responses
             except requests.exceptions.RequestException as e:
-                if response.status_code == 401:
-                    data = {'error': 'API key is unauthorized. Please check your API key and ensure it has the necessary permissions.'}
-                elif response.status_code == 403:
-                    data = {'error': 'API key is invalid or lacks necessary permissions. Please check your API key and permissions.'}
-                elif response.status_code == 400:
-                    data = {'error': 'Bad request. Please ensure the summoner name is correct.'}
-                else:
-                    data = {'error': f"Network error occurred: {e}"}
+                # Handle API errors
+                # Redirect to home with error message
+                return redirect('home')
             else:
                 if response.status_code == 200:
                     summoner_data = response.json()
-                    data = {
-                        'summoner': summoner_data,
-                    }
+                    # Pass summoner_data via URL parameters to profile_view
+                    return redirect('profile', summoner_puuid=summoner_data['puuid'], summoner_gameName=summoner_data['gameName'], summoner_tagLine=summoner_data['tagLine'])
                 else:
-                    data = {'error': f"Summoner not found. Status code: {response.status_code}"}
+                    # Handle summoner not found
+                    # Redirect to home with error message
+                    return redirect('home')
     else:
         form = SummonerForm()
 
-    return render(request, 'lol_stats/summoner.html', {'form': form, 'data': data})
+    return render(request, 'lol_stats/summoner.html', {'form': form})
+
+def profile_view(request, summoner_puuid, summoner_gameName, summoner_tagLine):
+    summoner_data = {
+        'puuid': summoner_puuid,
+        'gameName': summoner_gameName,
+        'tagLine': summoner_tagLine,
+    }
+    # Render profile.html with summoner_data
+    return render(request, 'lol_stats/profile.html', {'summoner': summoner_data})

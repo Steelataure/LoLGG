@@ -1,1 +1,11 @@
 {% extends "lol_stats/base.html" %}
+
+{% block title %}Summoner Profile{% endblock %}
+
+{% block content %}
+<div>
+    <h1>{{ summoner.gameName }}</h1>
+    <p>Tag: {{ summoner.tagLine }}</p>
+    <p>PUUID: {{ summoner.puuid }}</p>
+</div>
+{% endblock %}

@@ -7,45 +7,117 @@
 {% block content %}
 <style>
     body {
-        background-image: url("{% static 'lol_stats/images/backLoL.jpg' %}");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        overflow: hidden; /* Évite le scroll */
+        margin: 0;
+        padding: 0;
         height: 100vh;
+        overflow: hidden;
+    }
+    .bg-video {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -1;
     }
     .form-container {
-        background: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0);
         padding: 20px;
         border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin-top: -100px; /* Remonte le formulaire de 100 pixels */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0);
+        margin-top: -100px;
+        
+    }
+    .search-bar {
+        display: flex;
+        align-items: center;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .search-input {
+        flex: 1;
+        padding: 10px 15px;
+        border: none;
+        outline: none;
+        font-size: 16px;
+        background: rgba(255, 255, 255, 0.85); /* Added transparency to background */
+
+    }
+    .search-button {
+        background-color: rgba(26, 115, 232, 0.85); /* Added transparency */
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .search-button:hover {
+        background-color: #0c47a1;
     }
 </style>
+
+<!-- Vidéo de fond -->
+<video id="bg-video" class="bg-video" autoplay loop muted>
+    <source id="bg-video-source" type="video/webm">
+    Your browser does not support the video tag.
+</video>
+
 <div class="flex items-center justify-center min-h-screen">
-    <div class="max-w-lg w-full form-container">
+    <div class="max-w-lg w-full my-12 form-container">
         <form method="post" class="mb-4">
             {% csrf_token %}
-            <div class="flex items-center border-b border-gray-300 py-2">
-                <label for="summoner_name" class="hidden">Search Summoner</label>
-                <input id="summoner_name" type="text" name="summoner_name" placeholder="Enter Summoner Name" class="flex-1 appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none">
-                <button type="submit" class="flex-shrink-0 bg-blue-500 text-white py-2 px-4 rounded-md">Search</button>
+            <div class="search-bar">
+                <input id="summoner_name" type="text" name="summoner_name" placeholder="Enter Summoner Name" class="search-input">
+                <button type="submit" class="search-button">Search</button>
             </div>
         </form>
 
         {% if data %}
-            {% if data.error %}
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                    <span class="block sm:inline">{{ data.error }}</span>
-                </div>
-            {% else %}
-                <div class="mt-4">
-                    <h2 class="text-2xl font-bold mb-2">{{ data.summoner.gameName }}</h2>
-                    <p class="text-gray-700">Tag Line: {{ data.summoner.tagLine }}</p>
-                    <p class="text-gray-700">PUUID: {{ data.summoner.puuid }}</p>
-                </div>
-            {% endif %}
+        {% if data.error %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <span class="block sm:inline">{{ data.error }}</span>
+            </div>
+        {% else %}
+            <div class="mt-4">
+                <h2 class="text-2xl font-bold mb-2">{{ data.summoner.gameName }}</h2>
+                <p class="text-gray-700">Tag Line: {{ data.summoner.tagLine }}</p>
+                <p class="text-gray-700">PUUID: {{ data.summoner.puuid }}</p>
+                <a href="{% url 'profile' summoner_puuid=data.summoner.puuid summoner_gameName=data.summoner.gameName summoner_tagLine=data.summoner.tagLine %}" class="bg-blue-500 text-white py-2 px-4 rounded-md">View Profile</a>
+            </div>
+        {% endif %}
         {% endif %}
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Liste des fichiers vidéo
+        var videos = [
+            "{% static 'lol_stats/images/animated-missfortune.webm' %}",
+            "{% static 'lol_stats/images/animated-ionia.webm' %}",
+            "{% static 'lol_stats/images/animated-shurima.webm' %}",
+            "{% static 'lol_stats/images/animated-bilgetwater.webm' %}",
+            "{% static 'lol_stats/images/animated-champion-galio.webm' %}",
+            "{% static 'lol_stats/images/animated-demacia.webm' %}",
+            "{% static 'lol_stats/images/animated-rumble-supergalaxy.webm' %}",
+            "{% static 'lol_stats/images/animated-sona-mutemix.webm' %}",
+            "{% static 'lol_stats/images/animated-zaun.webm' %}",
+        ];
+
+        // Sélectionner une vidéo aléatoirement
+        var randomVideo = videos[Math.floor(Math.random() * videos.length)];
+
+        // Mettre à jour la source de la vidéo
+        var videoSource = document.getElementById("bg-video-source");
+        videoSource.src = randomVideo;
+
+        // Recharger la vidéo pour appliquer la nouvelle source
+        var bgVideo = document.getElementById("bg-video");
+        bgVideo.load();
+    });
+</script>
+
 {% endblock %}
